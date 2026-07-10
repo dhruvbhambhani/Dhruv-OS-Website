@@ -594,6 +594,8 @@ function PhotoWidget() {
   )
 }
 
+// Fallback shown until live data loads (or if the fetch fails, e.g. local dev
+// where the /api/quotes Vercel function isn't running)
 const STOCKS = [
   { sym: "NVDA", name: "NVIDIA", pct: "+2.4%", up: true },
   { sym: "SNOW", name: "Snowflake", pct: "+1.6%", up: true },
@@ -602,11 +604,22 @@ const STOCKS = [
 ]
 
 function StocksWidget() {
+  const [stocks, setStocks] = useState(STOCKS)
+
+  useEffect(() => {
+    fetch("/api/quotes")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((d) => {
+        if (Array.isArray(d) && d.length) setStocks(d)
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <div className="widget widget-stocks">
       <span className="widget-head">Stocks</span>
       <ul>
-        {STOCKS.map((s) => (
+        {stocks.map((s) => (
           <li key={s.sym}>
             <span className="stock-sym">
               {s.sym}
