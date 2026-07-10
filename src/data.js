@@ -65,6 +65,12 @@ export const experience = [
 
 export const projects = [
   {
+    title: "Canvas MCP for Claude — Open-source MCP server for Canvas LMS",
+    period: "May 2026 – Present",
+    meta: "Open Source",
+    href: "https://github.com/dhruvbhambhani/canvas-mcp",
+  },
+  {
     title: "CRYOS · TAMUHack26 — Runners-up, USAA Track",
     period: "Jan 2026",
     meta: "Hackathon",
