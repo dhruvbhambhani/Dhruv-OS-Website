@@ -80,6 +80,7 @@ export const projects = [
     title: "Crescent Place Apartments Website",
     period: "Jan 2026 – Present",
     meta: "Real Estate",
+    href: "https://www.crescentplaceapartments.com/",
   },
   {
     title: "JBB Asset Management Website",
