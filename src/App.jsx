@@ -450,10 +450,10 @@ function WeatherWidget() {
 }
 
 const UPCOMING = [
-  { text: "RAG pipeline @ Powell Industries", dot: "#3b82d6" },
-  { text: "EDEN humanoid robotics (TAMU-funded)", dot: "#38b6a5" },
-  { text: "NSF interpretable-ML paper", dot: "#7a93ab" },
-  { text: "LLM security research @ SUCCESS Lab", dot: "#5b7ea3" },
+  { text: "Building RAG Agent improvement/monitoring @ Powell (2000 docs)", dot: "#3b82d6" },
+  { text: "NSF AI for MechE rules paper", dot: "#7a93ab" },
+  { text: "Open-Claw for Robotics Proof of Concept", dot: "#38b6a5" },
+  { text: "Emotions/Personalities in robotics software @ EDEN robotics", dot: "#5b7ea3" },
 ]
 
 function UpcomingWidget() {
