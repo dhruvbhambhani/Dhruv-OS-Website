@@ -87,10 +87,19 @@ function Window({ win, onClose, onMinimize, onZoom, onFocus, onMove, children })
     if (e.target.closest("button")) return
     onFocus(win.id)
     e.preventDefault()
+    // keep the titlebar inside the desktop so windows can't be dragged
+    // past the clipped (overflow: hidden) edges and become unreachable
+    const desk = e.currentTarget.closest(".desktop")
+    const maxX = (desk?.clientWidth ?? window.innerWidth) - 120
+    const maxY = (desk?.clientHeight ?? window.innerHeight) - 40
     const offsetX = e.clientX - win.x
     const offsetY = e.clientY - win.y
     const move = (ev) =>
-      onMove(win.id, Math.max(-160, ev.clientX - offsetX), Math.max(0, ev.clientY - offsetY))
+      onMove(
+        win.id,
+        Math.min(maxX, Math.max(-160, ev.clientX - offsetX)),
+        Math.min(maxY, Math.max(0, ev.clientY - offsetY)),
+      )
     const up = () => {
       window.removeEventListener("pointermove", move)
       window.removeEventListener("pointerup", up)
