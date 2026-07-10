@@ -83,6 +83,12 @@ export const projects = [
     href: "https://www.crescentplaceapartments.com/",
   },
   {
+    title: "Pier Club Apartments Website",
+    period: "Jan 2026 – Present",
+    meta: "Real Estate",
+    href: "https://www.pierclubapartments.com/",
+  },
+  {
     title: "JBB Asset Management Website",
     period: "Oct 2025 – Present",
     meta: "Web",
