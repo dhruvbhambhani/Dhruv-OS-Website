@@ -347,32 +347,97 @@ function MenuBar({ onRestart }) {
 
 /* --------------------------------- widgets --------------------------------- */
 
-const FORECAST = [
-  { h: "3PM", t: "84°", e: "☀️" },
-  { h: "4PM", t: "83°", e: "🌤️" },
-  { h: "5PM", t: "81°", e: "🌤️" },
-  { h: "6PM", t: "78°", e: "🌥️" },
-  { h: "7PM", t: "74°", e: "🌙" },
-]
+// Fallback shown until live data loads (or if the fetch fails)
+const DEFAULT_WEATHER = {
+  temp: "84°",
+  label: "Sunny",
+  emoji: "☀️",
+  hi: "88°",
+  lo: "71°",
+  hours: [
+    { h: "3PM", t: "84°", e: "☀️" },
+    { h: "4PM", t: "83°", e: "🌤️" },
+    { h: "5PM", t: "81°", e: "🌤️" },
+    { h: "6PM", t: "78°", e: "🌥️" },
+    { h: "7PM", t: "74°", e: "🌙" },
+  ],
+}
+
+// College Station, TX — live data from Open-Meteo (free, no API key)
+const WEATHER_URL =
+  "https://api.open-meteo.com/v1/forecast?latitude=30.628&longitude=-96.334" +
+  "&current=temperature_2m,weather_code,is_day" +
+  "&hourly=temperature_2m,weather_code,is_day" +
+  "&daily=temperature_2m_max,temperature_2m_min" +
+  "&temperature_unit=fahrenheit&timezone=America%2FChicago&forecast_days=2"
+
+function wmoInfo(code, isDay) {
+  if (code === 0) return { label: isDay ? "Sunny" : "Clear", emoji: isDay ? "☀️" : "🌙" }
+  if (code === 1) return { label: isDay ? "Mostly Sunny" : "Mostly Clear", emoji: isDay ? "🌤️" : "🌙" }
+  if (code === 2) return { label: "Partly Cloudy", emoji: isDay ? "⛅" : "☁️" }
+  if (code === 3) return { label: "Overcast", emoji: "☁️" }
+  if (code === 45 || code === 48) return { label: "Foggy", emoji: "🌫️" }
+  if (code >= 51 && code <= 57) return { label: "Drizzle", emoji: "🌦️" }
+  if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return { label: "Rain", emoji: "🌧️" }
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return { label: "Snow", emoji: "🌨️" }
+  if (code >= 95) return { label: "Storms", emoji: "⛈️" }
+  return { label: "Cloudy", emoji: "☁️" }
+}
+
+// Open-Meteo returns times like "2026-07-10T15:00" in the requested timezone;
+// pull the hour straight from the string to avoid browser-timezone parsing.
+function hourLabel(time) {
+  const h = Number(time.slice(11, 13))
+  return `${h % 12 || 12}${h < 12 ? "AM" : "PM"}`
+}
 
 function WeatherWidget() {
+  const [wx, setWx] = useState(DEFAULT_WEATHER)
+
+  useEffect(() => {
+    fetch(WEATHER_URL)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((d) => {
+        const cur = wmoInfo(d.current.weather_code, d.current.is_day)
+        // ISO strings in a fixed timezone compare lexicographically
+        let start = d.hourly.time.findIndex((t) => t > d.current.time)
+        if (start < 0) start = 0
+        const hours = d.hourly.time.slice(start, start + 5).map((t, i) => {
+          const idx = start + i
+          const info = wmoInfo(d.hourly.weather_code[idx], d.hourly.is_day[idx])
+          return { h: hourLabel(t), t: `${Math.round(d.hourly.temperature_2m[idx])}°`, e: info.emoji }
+        })
+        setWx({
+          temp: `${Math.round(d.current.temperature_2m)}°`,
+          label: cur.label,
+          emoji: cur.emoji,
+          hi: `${Math.round(d.daily.temperature_2m_max[0])}°`,
+          lo: `${Math.round(d.daily.temperature_2m_min[0])}°`,
+          hours,
+        })
+      })
+      .catch(() => {}) // keep the fallback on any failure
+  }, [])
+
   return (
     <div className="widget widget-weather">
       <div className="weather-top">
         <div>
           <span className="weather-loc">College Station ⌖</span>
-          <span className="weather-temp">84°</span>
+          <span className="weather-temp">{wx.temp}</span>
         </div>
         <div className="weather-cond">
           <span className="weather-emoji" aria-hidden="true">
-            ☀️
+            {wx.emoji}
           </span>
-          <span>Sunny</span>
-          <span className="weather-hilo">H:88° L:71°</span>
+          <span>{wx.label}</span>
+          <span className="weather-hilo">
+            H:{wx.hi} L:{wx.lo}
+          </span>
         </div>
       </div>
       <div className="weather-row">
-        {FORECAST.map((f) => (
+        {wx.hours.map((f) => (
           <span className="weather-hour" key={f.h}>
             <span className="wh-h">{f.h}</span>
             <span aria-hidden="true">{f.e}</span>
