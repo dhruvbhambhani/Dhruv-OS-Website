@@ -76,7 +76,7 @@ const APPS = {
   contact: { title: "Contact", icon: "file", emoji: "✉️", tile: "tile-sky", width: 430 },
 }
 
-const DESKTOP_ORDER = ["about", "experience", "projects", "volunteering", "resume", "contact"]
+const DESKTOP_ORDER = ["about", "resume", "experience", "projects", "volunteering", "contact"]
 
 /* --------------------------------- windows -------------------------------- */
 
