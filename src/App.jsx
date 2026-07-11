@@ -633,34 +633,6 @@ function StocksWidget() {
   )
 }
 
-const RACE = [
-  { day: "FRI", ses: "Practice 1", time: "12:30" },
-  { day: "SAT", ses: "Qualifying", time: "15:00" },
-  { day: "SUN", ses: "Race", time: "14:00" },
-]
-
-function RaceWidget() {
-  return (
-    <div className="widget widget-race">
-      <span className="widget-head">
-        <span className="race-flag" aria-hidden="true">
-          🏁
-        </span>
-        Race Weekend · Spa
-      </span>
-      <ul>
-        {RACE.map((r) => (
-          <li key={r.ses}>
-            <span className="race-day">{r.day}</span>
-            <span className="race-ses">{r.ses}</span>
-            <span className="race-time">{r.time}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
 function Ring({ r, pct, color }) {
   const c = 2 * Math.PI * r
   return (
@@ -881,7 +853,6 @@ export default function App() {
           <MusicWidget />
           <StocksWidget />
           <ActivityWidget />
-          <RaceWidget />
         </div>
         <div className="desk-bottom-left">
           <PhotoWidget />

@@ -592,52 +592,6 @@ a {
   color: #fff;
 }
 
-/* race weekend */
-
-.widget-race {
-  width: 260px;
-  padding: 0.95rem 1.1rem 1rem;
-  background: rgba(26, 28, 34, 0.82);
-  backdrop-filter: blur(12px);
-  color: #eef2f5;
-  border-top: 3px solid #e10600;
-}
-
-.race-flag {
-  font-size: 1rem;
-}
-
-.widget-race ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.widget-race li {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.76rem;
-}
-
-.race-day {
-  font-weight: 700;
-  color: #e10600;
-  width: 30px;
-  flex-shrink: 0;
-}
-
-.race-ses {
-  color: #d6dde3;
-}
-
-.race-time {
-  margin-left: auto;
-  color: var(--ink-muted);
-  font-variant-numeric: tabular-nums;
-}
-
 /* activity rings */
 
 .widget-activity {
