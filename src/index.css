@@ -217,10 +217,20 @@ a {
   position: absolute;
   top: 1.1rem;
   left: 1.1rem;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 100px);
   gap: 0.55rem;
   z-index: 1;
+}
+
+.desktop-icon {
+  grid-column: 1;
+}
+
+/* resume sits to the right of about me */
+.desktop-icon:nth-child(2) {
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .desktop-icon {
@@ -1169,6 +1179,7 @@ a.file-row:hover {
   }
 
   .desktop-icons {
+    display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     top: 0.75rem;
