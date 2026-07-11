@@ -617,9 +617,11 @@ function MusicWidget() {
     }
   }, [])
 
+  // e.timer is the source of truth, not React state: state updates lag
+  // behind rapid clicks, which made pause re-trigger play instead.
   const toggle = () => {
     let e = engineRef.current
-    if (playing) {
+    if (e && e.timer) {
       clearInterval(e.timer)
       e.timer = null
       e.ctx.suspend()
@@ -631,20 +633,19 @@ function MusicWidget() {
       engineRef.current = e
       e.nextTime = e.ctx.currentTime + 0.1
     }
-    e.ctx.resume().then(() => {
-      e.timer = setInterval(() => {
-        while (e.nextTime < e.ctx.currentTime + 0.2) {
-          scheduleJazzBeat(e, e.bar, e.beat, e.nextTime)
-          e.nextTime += 60 / JAZZ_BPM
-          e.beat += 1
-          if (e.beat === 4) {
-            e.beat = 0
-            e.bar = (e.bar + 1) % JAZZ_BARS.length
-          }
+    e.timer = setInterval(() => {
+      while (e.nextTime < e.ctx.currentTime + 0.2) {
+        scheduleJazzBeat(e, e.bar, e.beat, e.nextTime)
+        e.nextTime += 60 / JAZZ_BPM
+        e.beat += 1
+        if (e.beat === 4) {
+          e.beat = 0
+          e.bar = (e.bar + 1) % JAZZ_BARS.length
         }
-      }, 60)
-      setPlaying(true)
-    })
+      }
+    }, 60)
+    e.ctx.resume()
+    setPlaying(true)
   }
 
   const restartTrack = () => {
