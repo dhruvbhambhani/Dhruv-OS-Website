@@ -484,34 +484,180 @@ function UpcomingWidget() {
   )
 }
 
+/* Synthesized late-night swing: ride cymbal, walking bass, Rhodes comping
+   over an 8-bar ii–V–I loop. Rootless comp voicings, chromatic approach
+   notes into each new bar, swung skip notes on 2 and 4. */
+const JAZZ_BPM = 88
+const JAZZ_BARS = [
+  { comp: [53, 57, 60, 64], bass: 38, minor: true }, // Dm9
+  { comp: [53, 57, 59, 64], bass: 43, minor: false }, // G13
+  { comp: [52, 55, 59, 62], bass: 36, minor: false }, // Cmaj9
+  { comp: [55, 59, 60, 64], bass: 45, minor: true }, // Am9
+  { comp: [53, 57, 60, 64], bass: 38, minor: true }, // Dm9
+  { comp: [53, 57, 59, 64], bass: 43, minor: false }, // G13
+  { comp: [52, 55, 59, 62], bass: 36, minor: false }, // Cmaj9
+  { comp: [55, 58, 61, 64], bass: 45, minor: false }, // A7b9
+]
+
+const midiHz = (m) => 440 * Math.pow(2, (m - 69) / 12)
+
+function createJazzEngine() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)()
+  const master = ctx.createGain()
+  master.gain.value = 0.4
+  master.connect(ctx.destination)
+  const noise = ctx.createBuffer(1, ctx.sampleRate * 0.4, ctx.sampleRate)
+  const data = noise.getChannelData(0)
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
+  return { ctx, master, noise, bar: 0, beat: 0, nextTime: 0, timer: null }
+}
+
+function playRhodes(e, midi, t, peak, dur) {
+  const f = midiHz(midi)
+  const g = e.ctx.createGain()
+  g.gain.setValueAtTime(0.0001, t)
+  g.gain.exponentialRampToValueAtTime(peak, t + 0.02)
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur)
+  g.connect(e.master)
+  const osc = e.ctx.createOscillator()
+  osc.type = "sine"
+  osc.frequency.value = f
+  osc.detune.value = Math.random() * 4 - 2
+  osc.connect(g)
+  osc.start(t)
+  osc.stop(t + dur + 0.05)
+  const bell = e.ctx.createGain()
+  bell.gain.setValueAtTime(0.0001, t)
+  bell.gain.exponentialRampToValueAtTime(peak * 0.3, t + 0.01)
+  bell.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.4)
+  bell.connect(e.master)
+  const osc2 = e.ctx.createOscillator()
+  osc2.type = "sine"
+  osc2.frequency.value = f * 2
+  osc2.connect(bell)
+  osc2.start(t)
+  osc2.stop(t + dur + 0.05)
+}
+
+function playBass(e, midi, t, dur) {
+  const g = e.ctx.createGain()
+  g.gain.setValueAtTime(0.0001, t)
+  g.gain.exponentialRampToValueAtTime(0.5, t + 0.02)
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur)
+  const lp = e.ctx.createBiquadFilter()
+  lp.type = "lowpass"
+  lp.frequency.value = 450
+  const osc = e.ctx.createOscillator()
+  osc.type = "triangle"
+  osc.frequency.value = midiHz(midi)
+  osc.connect(lp)
+  lp.connect(g)
+  g.connect(e.master)
+  osc.start(t)
+  osc.stop(t + dur + 0.05)
+}
+
+function playRide(e, t, peak, dur) {
+  const src = e.ctx.createBufferSource()
+  src.buffer = e.noise
+  const hp = e.ctx.createBiquadFilter()
+  hp.type = "highpass"
+  hp.frequency.value = 7000
+  const g = e.ctx.createGain()
+  g.gain.setValueAtTime(peak, t)
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur)
+  src.connect(hp)
+  hp.connect(g)
+  g.connect(e.master)
+  src.start(t)
+  src.stop(t + dur + 0.05)
+}
+
+function scheduleJazzBeat(e, bar, beat, t) {
+  const spb = 60 / JAZZ_BPM
+  const swing = spb * (2 / 3)
+  const chord = JAZZ_BARS[bar]
+  const next = JAZZ_BARS[(bar + 1) % JAZZ_BARS.length]
+
+  // ride: quarters plus swung skip note on 2 and 4 (spang-a-lang)
+  playRide(e, t, beat % 2 === 0 ? 0.14 : 0.1, 0.25)
+  if (beat === 1 || beat === 3) {
+    playRide(e, t + swing, 0.07, 0.12)
+    playRide(e, t, 0.05, 0.04) // pedal hat chick under 2 and 4
+  }
+
+  // walking bass: root, 3rd, 5th, chromatic approach into the next bar
+  let note
+  if (beat === 0) note = chord.bass
+  else if (beat === 1) note = chord.bass + (chord.minor ? 3 : 4)
+  else if (beat === 2) note = chord.bass + 7
+  else note = next.bass + (bar % 2 === 0 ? -1 : 1)
+  playBass(e, note, t, spb * 0.9)
+
+  // comping: sustained voicing on 1, swung stab on the and-of-3 every other bar
+  if (beat === 0) {
+    chord.comp.forEach((n, i) => playRhodes(e, n, t + i * 0.012, 0.05, spb * 3))
+  }
+  if (beat === 2 && bar % 2 === 0) {
+    chord.comp.forEach((n) => playRhodes(e, n, t + swing, 0.035, spb))
+  }
+}
+
 function MusicWidget() {
   const [playing, setPlaying] = useState(false)
-  const audioRef = useRef(null)
+  const engineRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      const e = engineRef.current
+      if (e) {
+        clearInterval(e.timer)
+        e.ctx.close()
+      }
+    }
+  }, [])
 
   const toggle = () => {
-    const audio = audioRef.current
-    if (!audio) return
+    let e = engineRef.current
     if (playing) {
-      audio.pause()
+      clearInterval(e.timer)
+      e.timer = null
+      e.ctx.suspend()
       setPlaying(false)
-    } else {
-      audio.volume = 0.45
-      audio
-        .play()
-        .then(() => setPlaying(true))
-        .catch(() => setPlaying(false))
+      return
     }
+    if (!e) {
+      e = createJazzEngine()
+      engineRef.current = e
+      e.nextTime = e.ctx.currentTime + 0.1
+    }
+    e.ctx.resume().then(() => {
+      e.timer = setInterval(() => {
+        while (e.nextTime < e.ctx.currentTime + 0.2) {
+          scheduleJazzBeat(e, e.bar, e.beat, e.nextTime)
+          e.nextTime += 60 / JAZZ_BPM
+          e.beat += 1
+          if (e.beat === 4) {
+            e.beat = 0
+            e.bar = (e.bar + 1) % JAZZ_BARS.length
+          }
+        }
+      }, 60)
+      setPlaying(true)
+    })
   }
 
   const restartTrack = () => {
-    const audio = audioRef.current
-    if (audio) audio.currentTime = 0
+    const e = engineRef.current
+    if (e) {
+      e.bar = 0
+      e.beat = 0
+    }
   }
 
   return (
     <div className="widget widget-music">
-      <audio ref={audioRef} src="/jazz.mp3" loop preload="none" />
-      <span className={`music-art ${playing ? "spinning" : ""}`} aria-hidden="true">
+      <span className="music-art" aria-hidden="true">
         ♫
       </span>
       <div className="music-info">

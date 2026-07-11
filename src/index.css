@@ -544,16 +544,6 @@ a {
   background: rgba(255, 255, 255, 0.14);
 }
 
-.music-art.spinning {
-  animation: spin 3.5s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* stocks */
 
 .widget-stocks {
