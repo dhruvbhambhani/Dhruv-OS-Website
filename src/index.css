@@ -233,6 +233,12 @@ a {
   grid-row: 1;
 }
 
+/* contact sits under resume, to the right of experience */
+.desktop-icon:nth-child(6) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
 .desktop-icon {
   display: flex;
   flex-direction: column;
