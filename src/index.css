@@ -1191,8 +1191,27 @@ a.file-row:hover {
     padding-right: 0;
   }
 
+  /* show Upcoming + Weather below the icon grid; hide the battery rings */
   .desk-right {
+    top: 215px;
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .desk-right .widget-battery {
     display: none;
+  }
+
+  .desk-right .widget-upcoming {
+    order: -1;
+    width: 100%;
+  }
+
+  .desk-right .widget-weather {
+    width: 100%;
   }
 
   .desk-right2 {
