@@ -1185,7 +1185,10 @@ a.file-row:hover {
   }
 
   .desktop-icon {
-    width: 76px;
+    /* wide enough that "Volunteering" fits on one line */
+    width: 82px;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .desk-right {
