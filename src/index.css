@@ -1212,6 +1212,43 @@ a.file-row:hover {
 
   .desk-right .widget-weather {
     width: 100%;
+    padding: 0.7rem 0.9rem 0.6rem;
+  }
+
+  /* compact weather so the hourly row clears the dock on small screens */
+  .desk-right .weather-temp {
+    font-size: 1.6rem;
+    font-weight: 400;
+  }
+
+  .desk-right .weather-loc,
+  .desk-right .weather-cond {
+    font-size: 0.7rem;
+  }
+
+  .desk-right .weather-emoji {
+    font-size: 1rem;
+  }
+
+  .desk-right .weather-row {
+    margin-top: 0.45rem;
+    padding-top: 0.4rem;
+  }
+
+  .desk-right .weather-hour {
+    font-size: 0.64rem;
+  }
+
+  .desk-right .widget-upcoming {
+    padding: 0.75rem 0.9rem 0.8rem;
+  }
+
+  .desk-right .widget-upcoming ul {
+    gap: 0.45rem;
+  }
+
+  .desk-right .widget-upcoming li {
+    font-size: 0.74rem;
   }
 
   .desk-right2 {
